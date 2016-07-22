@@ -1,20 +1,25 @@
+from __future__ import print_function
+
 import email
 import zipfile
 import os
 import gzip
 import string
 import boto3
-
+import urllib
 
 print('Loading function')
 
 s3 = boto3.client('s3')
 xmlDir = "/tmp/output/"
 
+outputBucket = "security-dmarc-raw"
+outputPrefix = "xml/" # Should end with /
+
 
 def lambda_handler(event, context):
     bucket = event['Records'][0]['s3']['bucket']['name']
-    key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key'])
+    key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key']).decode('uft8')
 
     try:
         # Use waiter to ensure the file is persisted
@@ -39,7 +44,10 @@ def lambda_handler(event, context):
 
             # Upload the XML files to S3
             upload_resulting_files_to_s3()
-                
+
+        else:
+            print("Could not see file/attachment.")
+
     except Exception as e:
         print(e)
         print('Error getting object {} from bucket {}. Make sure they exist '
@@ -71,6 +79,9 @@ def extract_attachment(attachment):
 
 def upload_resulting_files_to_s3():
     # Put all XML back into S3 (Covers non-compliant cases if a ZIP contains multiple results)
-    for file in os.listdir(xmlDir):
-        if file.endswith(".xml"):
-            print(file)  # File name to upload
+    k = s3.Key(outputBucket)
+    for fileName in os.listdir(xmlDir):
+        if fileName.endswith(".xml"):
+            print("Uploading: " + fileName)  # File name to upload
+            k.key = outputPrefix + fileName
+            k.set_contents_from_file(open(xmlDir+'/'+fileName))

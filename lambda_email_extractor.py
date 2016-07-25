@@ -14,7 +14,7 @@ s3 = boto3.client('s3')
 s3r = boto3.resource('s3')
 xmlDir = "/tmp/output/"
 
-outputBucket = "" # Set here for a seperate bucket otherwise it is set to the events bucket
+outputBucket = ""  # Set here for a seperate bucket otherwise it is set to the events bucket
 outputPrefix = "xml/"  # Should end with /
 
 
@@ -22,13 +22,13 @@ def lambda_handler(event, context):
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key']).decode('utf8')
 
-    # Set outputBucket if required
-    if outputBucket == "":
-        outputBucket = bucket
-
     try:
-        # Use waiter to ensure the file is persisted
+        # Set outputBucket if required
+        if not outputBucket:
+            global outputBucket
+            outputBucket = bucket
 
+        # Use waiter to ensure the file is persisted
         waiter = s3.get_waiter('object_exists')
         waiter.wait(Bucket=bucket, Key=key)
 

@@ -66,15 +66,7 @@ def lambda_handler(event, context):
 
 def extract_attachment(attachment):
     # Process filename.zip attachments
-    if (attachment.get_content_type() == "application/x-zip-compressed") or \
-            (attachment.get_content_type() == "multipart/zip"):
-        open('/tmp/attachment.zip', 'wb').write(attachment.get_payload(decode=True))
-        with zipfile.ZipFile('/tmp/attachment.zip', "r") as z:
-            z.extractall(xmlDir)
-
-    # Process filename.xml.gz attachments (Providers not complying to standards)
-    elif (attachment.get_content_type() == "application/gzip") or \
-            (attachment.get_content_type() == "multipart/x-gzip"):
+    if "gzip" in attachment.get_content_type():
         contentdisp = string.split(attachment.get('Content-Disposition'), '=')
         fname = contentdisp[1].replace('\"', '')
         open('/tmp/' + contentdisp[1], 'wb').write(attachment.get_payload(decode=True))
@@ -82,6 +74,12 @@ def extract_attachment(attachment):
         # ignore the report
         xmlname = fname[:-3]
         open(xmlDir + xmlname, 'wb').write(gzip.open('/tmp/' + contentdisp[1], 'rb').read())
+
+    # Process filename.xml.gz attachments (Providers not complying to standards)
+    elif "zip" in attachment.get_content_type():
+        open('/tmp/attachment.zip', 'wb').write(attachment.get_payload(decode=True))
+        with zipfile.ZipFile('/tmp/attachment.zip', "r") as z:
+            z.extractall(xmlDir)
 
     else:
         print('Skipping ' + attachment.get_content_type())

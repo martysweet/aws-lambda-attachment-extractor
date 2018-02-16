@@ -9,11 +9,10 @@ files stored to an Amazon S3 bucket, typically by an inbound SES routing rule. S
 Use cases
 ---------
 
-The original use for this projectwas to process DMARC reports, getting .ZIP and .GZIP attachments from emails stored in S3 and extracting the archives,
-resulting in .XML files, which are then uploaded to another S3 bucket for processing by another service.
+The original use for this project was to process DMARC reports, getting .ZIP and .GZIP attachments from emails stored in S3 and extracting the archives, resulting in .XML files, which are then uploaded to another S3 bucket for processing by another service.
 
 The Python file doesn't perform security checks on attachments and will ignore anything which does not 
-result in an .XML file. The original email is not deleted after processing takes place, however feel free to add this functionality. Alternatively a S3 bucket policy can be used.
+result in an .XML file. The original email is not deleted after processing takes place, however, this functionality could be added. Alternatively a S3 bucket transition policy can be used.
 
 This type of processing may be very useful for extracting DMARC reports, which are sent by email service providers 
 to an email address specified in the _rua_ section of your DMARC DNS record, see https://dmarc.org/overview/. You 

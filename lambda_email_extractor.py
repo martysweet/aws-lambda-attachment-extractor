@@ -62,7 +62,8 @@ def lambda_handler(event, context):
             'and your bucket is in the same region as this '
             'function.'.format(key, bucket))
         raise e
-
+    delete_file(key, bucket)
+    
 
 def extract_attachment(attachment):
     # Process filename.zip attachments
@@ -91,3 +92,10 @@ def upload_resulting_files_to_s3():
         if fileName.endswith(".xml"):
             print("Uploading: " + fileName)  # File name to upload
             s3r.meta.client.upload_file(xmlDir+'/'+fileName, outputBucket, outputPrefix+fileName)
+
+            
+# Delete the file in the current bucket
+def delete_file(key, bucket):
+    s3.delete_object(Bucket=bucket, Key=key)
+    print("%s deleted fom %s ") % (key, bucket)
+
